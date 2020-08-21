@@ -31,62 +31,41 @@ close(conBlogs)
 
 
 # clean blogsSample
-# remove special characters
 # TODO: Write as function 'cleanText' or so
-gsub("[[:punct:]]", "", blogsSample)
-gsub("[^a-zA-Z0-9]", "", blogsSample)
-
+library(stringr)
 # everything to lower case
-tolower(blogsSample)
-# remove numbers
+blogsSample <- tolower(blogsSample)
+# remove anything other than alphabetic characters
+blogsSample <- str_replace_all(blogsSample, "[^a-zA-Z\\s]", " ")
+# remove profanity
+con <- file("https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol", "r")
+profList <- readLines(con)
+close(con)
+blogsSample <- removeWords(blogsSample, profList)
 
+# shrink down to only one white space
+blogsSample <- str_replace_all(blogsSample, "[\\s]+", " ")
 
-
-# function for profanity filtering
-profanityFilter <- function(wordList){
-        
-        # read list with profanity words
-        con <- file("https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol", "r")
-        profList <- readLines(con)
-        close(con)
-        
-        library(stringr)
-        
-        str_replace_all(wordList, profList, replacement = NA_character_)
-        
-        wordList
-        
-}
-
-profanityFilter(blogsSample)
-
+# split into tokens
+blogsSample <- str_split(blogsSample, " ")
 
 
 # creating function that takes a file as input and
 # returns a tokenized version of it
-tokenize <- function(file){
-        library(tokenizers)
-        file <- tokenize_words(file)
-        file
-}
+# tokenize <- function(file){
+#         library(tokenizers)
+#         file <- tokenize_words(file)
+#         file
+# }
+# 
+# # tokenize blogsSample
+# blogsSample <- tokenize(blogsSample)
+# 
+# 
+# blogsSample
 
-# tokenize blogsSample
-blogsSample <- tokenize(blogsSample)
 
-
-blogsSample
-
-
-# test profanityFilter function
-con <- file("https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol", "r")
-profList <- readLines(con)
-close(con)
-
-text <- "I hate this motherfucking bitch ass guy."
-
-profanityFilter(text)
-text
-
-str_replace_all(text, profList, replacement = NA_character_)
-
-text
+# creating corpus
+library(quanteda)
+my_corpus <- corpus(blogsSample)
+my_corpus2 <- Corpus(blogsSample)
