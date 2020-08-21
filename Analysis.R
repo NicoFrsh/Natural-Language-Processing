@@ -32,7 +32,27 @@ close(conBlogs)
 
 # clean blogsSample
 # TODO: Write as function 'cleanText' or so
+cleanData <- function(txt){
+        temp <- tolower(txt)
+        temp <- stringr::str_replace_all(temp, "[^a-zA-Z\\s]", "")
+        # remove profanity
+        con <- file("https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol", "r")
+        profList <- readLines(con)
+        close(con)
+        temp <- tm::removeWords(temp, profList)
+        # shrink down to only one white space
+        temp <- stringr::str_replace_all(temp, "[\\s]+", " ")
+        # split into tokens / words
+        temp <- stringr::str_split(temp, " ")
+        ind <- which(temp == "")
+        if (length(ind) > 0) temp <- temp[-ind]
+        return(temp)
+}
+
+cleanData(blogsSample)
+
 library(stringr)
+library(tm)
 # everything to lower case
 blogsSample <- tolower(blogsSample)
 # remove anything other than alphabetic characters
@@ -49,21 +69,9 @@ blogsSample <- str_replace_all(blogsSample, "[\\s]+", " ")
 # split into tokens
 blogsSample <- str_split(blogsSample, " ")
 
-
-# creating function that takes a file as input and
-# returns a tokenized version of it
-# tokenize <- function(file){
-#         library(tokenizers)
-#         file <- tokenize_words(file)
-#         file
-# }
-# 
-# # tokenize blogsSample
-# blogsSample <- tokenize(blogsSample)
-# 
-# 
-# blogsSample
-
+# remove empty entries
+ind <- which(blogsSample == "")
+if (length(ind) > 0) blogsSample <- blogsSample[-ind]
 
 # creating corpus
 library(quanteda)
