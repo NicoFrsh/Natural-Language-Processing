@@ -1,0 +1,55 @@
+---
+title: "Milestone Report 1"
+author: "Nico Frisch"
+date: "26 8 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Milestone Report
+
+I decided to use the quanteda package for all of my data preprocessing and exploratory analysis.
+
+```{r}
+library(readtext)
+library(quanteda)
+
+all_data <- readtext(paste0(getwd(), "/Samples/*.txt"), encoding = "UTF-8")
+```
+
+Next, we create a quanteda corpus object. As there were some encoding problems I had to substitute all non-UTF-8 encoded characters to ASCII.
+
+```{r, echo=TRUE}
+# create a corpus 
+corp <- corpus(all_data)
+
+# remove non utf-8 characters
+texts(corp) <- iconv(texts(corp), from = "UTF-8", to = "ASCII", sub = "")
+```
+
+Now, we can tokenize our corpus object. We want to have word tokens and remove all numbers, punctuation, symbols and URLs.
+
+```{r}
+tok <- tokens(corp, what = "fasterword", remove_punct = TRUE, remove_symbols = TRUE,
+              remove_numbers = TRUE, remove_url = TRUE, split_hyphens = TRUE)
+```
+
+As another part of the data cleaning process we want to remove english stopwords like "the", "a", "is", etc. as they should not be taken into account for our further data analysis. Also, we want all our words to be in lower case and lastly we want to remove profanity words. For the latter case I used [this](https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol) list from Github.
+
+```{r}
+# remove stop words
+tok <- tokens_select(tok, stopwords('english'),selection='remove')
+
+# to lower case
+tok <- tokens_tolower(tok)
+
+# remove profanity
+con <- file("https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol", "r")
+profList <- readLines(con)
+close(con)
+
+tok <- tokens_select(tok, profList, selection = "remove")
+```
