@@ -64,6 +64,10 @@ head(biGram[[1]],30)
 triGram <- tokens_ngrams(tok, n = 3)
 head(triGram[[1]],30)
 
+# get frequencies
+topfeatures(dfm(biGram), 20)
+topfeatures(dfm(triGram), 20)
+
 # not very useful, lets try selective n-grams
 # for example negation bigram
 just_bigram <- tokens_compound(tok, pattern = phrase("just *"))

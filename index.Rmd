@@ -83,3 +83,17 @@ Another cool feature to visualize the distribution of word frequencies is the te
 textplot_wordcloud(dfm, random_order = FALSE, max_words = 150, rotation = 0.25,
                    color = RColorBrewer::brewer.pal(8, "Dark2"))
 ```
+
+N-grams are word chains of N words that appear in our corpus. We want to know the frequencies of 2-grams and 3-grams in our dataset.
+
+```{r}
+# create n-grams
+biGram <- tokens_ngrams(tok, n = 2)
+triGram <- tokens_ngrams(tok, n = 3)
+
+# get frequencies
+topfeatures(dfm(biGram), 20)
+topfeatures(dfm(triGram), 20)
+```
+
+This already looks quite nice, there are mostly bi- and tri-grams that make actually sense.
