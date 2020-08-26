@@ -115,3 +115,22 @@ gg
 
 This already looks quite nice, there are mostly bi- and tri-grams that make actually sense.
 Nonetheless, there appears the bi-gram 'said._"i' several times.
+
+Next, we want to anser the question how many unique words do you need in a frequency sorted dictionary to cover 50% of all word instances in the language? What about 90%? To find that out, we construct a new dataframe containing the by frequency sorted words of our data, their cumulative sum and proportion of the total amount of words in all of our text data. The plot below shows the coverage (y-axis) along the number of sorted unique words (x-axis). The red line shows the point at which the coverage surpasses 50% - needing the first 1818 most frequent words - and the blue line where it surpasses 90%, achieved by including the first 18554 words.  
+
+```{r}
+topfeat <- topfeatures(dfm, length(dfm))
+cvrg <- data.frame(n = 1:length(topfeat), total = cumsum(topfeat))
+cvrg$prop <- cvrg$total / cvrg$total[length(topfeat)]
+
+plot(cvrg$n, cvrg$prop, type = "l", xlab = "Number of unique words", 
+     ylab = "Proportion of total words", main = "Coverage by frequency sorted dictionary")
+# find first word that surpasses the 50% mark
+ind50 <- which(cvrg$prop > 0.5)[1]
+# now for the 90%
+ind90 <- which(cvrg$prop > 0.9)[1]
+abline(v = ind50, col = "red")
+abline(v = ind90, col = "blue")
+ind50
+ind90
+```

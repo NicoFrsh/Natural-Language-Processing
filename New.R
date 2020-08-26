@@ -91,6 +91,23 @@ gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
 
 gg
 
+# QUESTION:
+# How many unique words do you need in a frequency sorted dictionary
+# to cover 50% of all word instances in the language? 90%? 
+topfeat <- topfeatures(dfm, length(dfm))
+cvrg <- data.frame(n = 1:length(topfeat), total = cumsum(topfeat))
+cvrg$prop <- cvrg$total / cvrg$total[length(topfeat)]
+
+plot(cvrg$n, cvrg$prop, type = "l", xlab = "Number of unique words", 
+     ylab = "Proportion of total words", main = "Coverage by frequency sorted dictionary")
+# find first word that surpasses the 50% mark
+ind50 <- which(cvrg$prop > 0.5)[1]
+# now for the 90%
+ind90 <- which(cvrg$prop > 0.9)[1]
+abline(v = ind50, col = "red")
+abline(v = ind90, col = "blue")
+ind50
+ind90
 
 # Lets try selective n-grams
 # for example negation bigram
