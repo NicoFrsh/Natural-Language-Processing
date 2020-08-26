@@ -43,12 +43,18 @@ top20 <- topfeatures(dfm, 20)
 
 freq <- data.frame(feature = names(top20), frequency = top20)
 
+library(ggplot2)
+
 gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) + 
         geom_bar(stat = "identity") +
         coord_flip() +
         labs(x = NULL, y = "Frequency", title = "Top 20 Features")
 
 gg
+
+# wordcloud
+textplot_wordcloud(dfm, random_order = FALSE, max_words = 150, rotation = 0.25,
+                   color = RColorBrewer::brewer.pal(8, "Dark2"))
 
 # create n-grams
 biGram <- tokens_ngrams(tok, n = 2)
@@ -77,10 +83,6 @@ people_skipgram <-tokens_compound(tok, pattern = phrase("people *"))
 people_skipgram_select <- tokens_select(people_skipgram, pattern = phrase("people_*"))
 head(people_skipgram_select[[1]], 30)
 
-# now some stuff using the dfm
-# wordcloud
-textplot_wordcloud(dfm, random_order = FALSE, max_words = 150, rotation = 0.25,
-                   color = RColorBrewer::brewer.pal(8, "Dark2"))
 
 # convert the frequency count to a proportion within documents
 dfm_weight(dfm, scheme = "prop")
@@ -103,7 +105,6 @@ textplot_network(fcm_select, min_freq = 0.8, vertex_size = size / max(size) * 3)
 tstat_freq <- textstat_frequency(dfm, n = 10, groups = docnames(dfm))
 
 # plot in ggplot
-library(ggplot2)
 dfm %>%
         textstat_frequency(n = 10, groups = docnames(dfm)) %>%
         ggplot(aes(x = reorder(feature, frequency), y = frequency)) +

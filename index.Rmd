@@ -22,7 +22,7 @@ all_data <- readtext(paste0(getwd(), "/Samples/*.txt"), encoding = "UTF-8")
 
 Next, we create a quanteda corpus object. As there were some encoding problems I had to substitute all non-UTF-8 encoded characters to ASCII.
 
-```{r, echo=TRUE}
+```{r, echo=TRUE, cache=TRUE}
 # create a corpus 
 corp <- corpus(all_data)
 
@@ -32,7 +32,7 @@ texts(corp) <- iconv(texts(corp), from = "UTF-8", to = "ASCII", sub = "")
 
 Now, we can tokenize our corpus object. We want to have word tokens and remove all numbers, punctuation, symbols and URLs.
 
-```{r}
+```{r, cache=TRUE}
 tok <- tokens(corp, what = "fasterword", remove_punct = TRUE, remove_symbols = TRUE,
               remove_numbers = TRUE, remove_url = TRUE, split_hyphens = TRUE)
 ```
@@ -52,4 +52,34 @@ profList <- readLines(con)
 close(con)
 
 tok <- tokens_select(tok, profList, selection = "remove")
+```
+
+Although there are still some issues about the texts, such as unwanted dots or commas that were not properly removed by the remove_punct function, we concede to the next step of our analysis, the exploratory analysis part.
+
+## Exploratory Analysis
+
+First, we want to get an overview on the distribution of word frequencies. To get the most frequent words we have to create a Document Feature Matrix (DFM), then we can use the topfeatures function of the quanteda package.
+
+```{r}
+dfm <- dfm(tok)
+
+# top featured words
+top20 <- topfeatures(dfm, 20)
+
+freq <- data.frame(feature = names(top20), frequency = top20)
+
+library(ggplot2)
+gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) + 
+        geom_bar(stat = "identity") +
+        coord_flip() +
+        labs(x = NULL, y = "Frequency", title = "Top 20 Features")
+
+gg
+```
+
+Another cool feature to visualize the distribution of word frequencies is the textplot_wordcloud function:
+
+```{r}
+textplot_wordcloud(dfm, random_order = FALSE, max_words = 150, rotation = 0.25,
+                   color = RColorBrewer::brewer.pal(8, "Dark2"))
 ```
