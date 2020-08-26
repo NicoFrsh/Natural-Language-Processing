@@ -91,9 +91,27 @@ N-grams are word chains of N words that appear in our corpus. We want to know th
 biGram <- tokens_ngrams(tok, n = 2)
 triGram <- tokens_ngrams(tok, n = 3)
 
-# get frequencies
-topfeatures(dfm(biGram), 20)
-topfeatures(dfm(triGram), 20)
+# get frequencies and plot
+top20bigram <- topfeatures(dfm(biGram), 20)
+freq <- data.frame(feature = names(top20bigram), frequency = top20bigram)
+
+gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
+        geom_bar(stat = "identity") + 
+        coord_flip() +
+        labs(x = NULL, y = "Frequency", title = "Top 20 Bi-Grams")
+
+gg
+
+top20trigram <- topfeatures(dfm(triGram), 20)
+freq <- data.frame(feature = names(top20trigram), frequency = top20trigram)
+
+gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
+        geom_bar(stat = "identity") + 
+        coord_flip() +
+        labs(x = NULL, y = "Frequency", title = "Top 20 Tri-Grams")
+
+gg
 ```
 
 This already looks quite nice, there are mostly bi- and tri-grams that make actually sense.
+Nonetheless, there appears the bi-gram 'said._"i' several times.

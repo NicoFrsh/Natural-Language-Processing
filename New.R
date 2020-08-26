@@ -58,6 +58,8 @@ textplot_wordcloud(dfm, random_order = FALSE, max_words = 150, rotation = 0.25,
 
 # create n-grams
 biGram <- tokens_ngrams(tok, n = 2)
+# biGram <- tokens_ngrams(tok, n = 2, concatenator = " ")
+
 # 2-gram
 head(biGram[[1]],30)
 # 3-gram
@@ -68,7 +70,29 @@ head(triGram[[1]],30)
 topfeatures(dfm(biGram), 20)
 topfeatures(dfm(triGram), 20)
 
-# not very useful, lets try selective n-grams
+# plot in ggplot
+top20bigram <- topfeatures(dfm(biGram), 20)
+freq <- data.frame(feature = names(top20bigram), frequency = top20bigram)
+
+gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
+        geom_bar(stat = "identity") + 
+        coord_flip() +
+        labs(x = NULL, y = "Frequency", title = "Top 20 Bi-Grams")
+
+gg
+
+top20trigram <- topfeatures(dfm(triGram), 20)
+freq <- data.frame(feature = names(top20trigram), frequency = top20trigram)
+
+gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
+        geom_bar(stat = "identity") + 
+        coord_flip() +
+        labs(x = NULL, y = "Frequency", title = "Top 20 Tri-Grams")
+
+gg
+
+
+# Lets try selective n-grams
 # for example negation bigram
 just_bigram <- tokens_compound(tok, pattern = phrase("just *"))
 just_bigram_select <- tokens_select(just_bigram, pattern = phrase("just_*"))
