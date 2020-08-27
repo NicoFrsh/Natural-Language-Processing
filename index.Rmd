@@ -134,3 +134,15 @@ abline(v = ind90, col = "blue")
 ind50
 ind90
 ```
+
+Another question we should ask ourselves is how to increase the coverage, i.e. identifying words that may not be in the corpora or using a smaller number of words in the dictionary to cover the same number of phrases? One solution would be to trim our data set, so that we delete words that only appear very few times. Those words may be very specific and thus not very helpful for our further modelling.
+
+```{r}
+# check number of words in each document before trimming
+ntoken(dfm)
+dfm <- dfm_trim(dfm, min_termfreq = 5, termfreq_type = "count")
+# check number of words afterwards
+ntoken(dfm)
+```
+
+Doing so, we removed some reasonable amount of words from our data.

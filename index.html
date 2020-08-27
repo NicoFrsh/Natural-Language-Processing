@@ -467,6 +467,17 @@ abline(v = ind90, col = &quot;blue&quot;)</code></pre>
 <pre><code>## [1] 1818</code></pre>
 <pre class="r"><code>ind90</code></pre>
 <pre><code>## [1] 18554</code></pre>
+<p>Another question we should ask ourselves is how to increase the coverage, i.e. identifying words that may not be in the corpora or using a smaller number of words in the dictionary to cover the same number of phrases? One solution would be to trim our data set, so that we delete words that only appear very few times. Those words may be very specific and thus not very helpful for our further modelling.</p>
+<pre class="r"><code># check number of words in each document before trimming
+ntoken(dfm)</code></pre>
+<pre><code>##   blogsSample.txt    newsSample.txt twitterSample.txt 
+##           1996724           2001570           1734151</code></pre>
+<pre class="r"><code>dfm &lt;- dfm_trim(dfm, min_termfreq = 5, termfreq_type = &quot;count&quot;)
+# check number of words afterwards
+ntoken(dfm)</code></pre>
+<pre><code>##   blogsSample.txt    newsSample.txt twitterSample.txt 
+##           1991258           1995580           1730984</code></pre>
+<p>Doing so, we removed some reasonable amount of words from our data.</p>
 </div>
 
 

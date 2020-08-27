@@ -109,6 +109,14 @@ abline(v = ind90, col = "blue")
 ind50
 ind90
 
+# Can you think of a way to increase the coverage -- identifying words that may not be in the
+# corpora or using a smaller number of words in the dictionary to cover the same number of phrases?
+# answer: trim words that have very low frequency as they are very specialized / specific
+# check number of tokens / words
+ntoken(dfm)
+dfm <- dfm_trim(dfm, min_termfreq = 5, termfreq_type = "count")
+ntoken(dfm)
+
 # Lets try selective n-grams
 # for example negation bigram
 just_bigram <- tokens_compound(tok, pattern = phrase("just *"))
