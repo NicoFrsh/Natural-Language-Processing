@@ -11,7 +11,9 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 ## Milestone Report
 
-I decided to use the quanteda package for all of my data preprocessing and exploratory analysis.
+About the data ....
+In order to save computation time I sampled 10% of the data of all texts and saved those samples in separate text files. These smaller samples are stored in a folder named 'Samples' and can be loaded completely starting the analysis.
+I decided to use the quanteda package for all of my data preprocessing and exploratory analysis. To gather the data from the 3 text files I used the readtext function from the equally named package. 
 
 ```{r}
 library(readtext)
@@ -37,7 +39,7 @@ tok <- tokens(corp, what = "fasterword", remove_punct = TRUE, remove_symbols = T
               remove_numbers = TRUE, remove_url = TRUE, split_hyphens = TRUE)
 ```
 
-As another part of the data cleaning process we want to remove english stopwords like "the", "a", "is", etc. as they should not be taken into account for our further data analysis. Also, we want all our words to be in lower case and lastly we want to remove profanity words. For the latter case I used [this](https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol) list from Github.
+As another part of the data cleaning process we want to remove english stopwords like "the", "i", "a", "is", etc. as they should not be taken into account for our further data analysis. Also, we want all our words to be in lower case and lastly we want to remove profanity words. For the latter case I used [this](https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol) list from Github.
 
 ```{r}
 # remove stop words
@@ -54,11 +56,11 @@ close(con)
 tok <- tokens_select(tok, profList, selection = "remove")
 ```
 
-Although there are still some issues about the texts, such as unwanted dots or commas that were not properly removed by the remove_punct function, we concede to the next step of our analysis, the exploratory analysis part.
+Although there are still some issues about the texts, such as unwanted dots or commas that were not properly removed by the remove_punct function, we concede to the next step of our analysis, the exploratory analysis.
 
 ## Exploratory Analysis
 
-First, we want to get an overview on the distribution of word frequencies. To get the most frequent words we have to create a Document Feature Matrix (DFM), then we can use the topfeatures function of the quanteda package.
+First, we want to get an overview on the distribution of word frequencies. To get the most frequent words we have to create a Document Feature Matrix (DFM), then we can use the topfeatures function of the quanteda package. The DFM contains for each document in our corpus every 'feature' - in our case every word - together with its count value.
 
 ```{r}
 dfm <- dfm(tok)
@@ -114,9 +116,9 @@ gg
 ```
 
 This already looks quite nice, there are mostly bi- and tri-grams that make actually sense.
-Nonetheless, there appears the bi-gram 'said._"i' several times.
+Nonetheless, the bi-gram 'said._"i' appears several times.
 
-Next, we want to anser the question how many unique words do you need in a frequency sorted dictionary to cover 50% of all word instances in the language? What about 90%? To find that out, we construct a new dataframe containing the by frequency sorted words of our data, their cumulative sum and proportion of the total amount of words in all of our text data. The plot below shows the coverage (y-axis) along the number of sorted unique words (x-axis). The red line shows the point at which the coverage surpasses 50% - needing the first 1818 most frequent words - and the blue line where it surpasses 90%, achieved by including the first 18554 words.  
+Next, we want to answer the question how many unique words we need in a frequency sorted dictionary to cover 50% and 90% of all word instances in the language. To find that out, we construct a new dataframe containing the by frequency sorted words of our data, their cumulative sum and proportion of the total amount of words in all of our text data. The plot below shows the coverage (y-axis) along the number of sorted unique words (x-axis). The red line shows the point at which the coverage surpasses 50% - needing the first 1818 most frequent words - and the blue line where it surpasses 90%, achieved by including the first 18554 words.  
 
 ```{r}
 topfeat <- topfeatures(dfm, length(dfm))
@@ -135,7 +137,7 @@ ind50
 ind90
 ```
 
-Another question we should ask ourselves is how to increase the coverage, i.e. identifying words that may not be in the corpora or using a smaller number of words in the dictionary to cover the same number of phrases? One solution would be to trim our data set, so that we delete words that only appear very few times. Those words may be very specific and thus not very helpful for our further modelling.
+Another question we should ask ourselves is how to increase the coverage, i.e. identifying words that may not be in the corpora or using a smaller number of words in the dictionary to cover the same number of phrases? One solution would be to trim our data set by deleting words that only appear very few times. Those words may be very specific and thus not very helpful for our further modelling.
 
 ```{r}
 # check number of words in each document before trimming
