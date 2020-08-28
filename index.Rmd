@@ -184,7 +184,10 @@ predictWord <- function(toks, prevWords){
         prevWords <- stringr::str_replace(prevWords, " ", "_")
         word_bigram_select <- tokens_select(word_bigram, pattern = phrase(paste0(prevWords, "_*")))
         
-        topfeatures(dfm(word_bigram_select), 3)
+        top3 <- topfeatures(dfm(word_bigram_select), 3)
+        
+        # filter only the following word
+        sub(".*_", "", names(top3))
 }
 
 predictWord(tok, "just")

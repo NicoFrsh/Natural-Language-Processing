@@ -531,21 +531,20 @@ predictWord &lt;- function(toks, prevWords){
         prevWords &lt;- stringr::str_replace(prevWords, &quot; &quot;, &quot;_&quot;)
         word_bigram_select &lt;- tokens_select(word_bigram, pattern = phrase(paste0(prevWords, &quot;_*&quot;)))
         
-        topfeatures(dfm(word_bigram_select), 3)
+        top3 &lt;- topfeatures(dfm(word_bigram_select), 3)
+        
+        # filter only the following word
+        sub(&quot;.*_&quot;, &quot;&quot;, names(top3))
 }
 
 predictWord(tok, &quot;just&quot;)</code></pre>
-<pre><code>##       just_a     just_got just_because 
-##         1605          796          730</code></pre>
+<pre><code>## [1] &quot;a&quot;       &quot;got&quot;     &quot;because&quot;</code></pre>
 <pre class="r"><code>predictWord(tok, &quot;i&quot;)</code></pre>
-<pre><code>##  i_was i_have   i_am 
-##   9462   9068   8593</code></pre>
+<pre><code>## [1] &quot;was&quot;  &quot;have&quot; &quot;am&quot;</code></pre>
 <pre class="r"><code>predictWord(tok, &quot;why&quot;)</code></pre>
-<pre><code>##   why_i why_are  why_do 
-##     732     408     396</code></pre>
+<pre><code>## [1] &quot;i&quot;   &quot;are&quot; &quot;do&quot;</code></pre>
 <pre class="r"><code>predictWord(tok, &quot;do you&quot;)</code></pre>
-<pre><code>## do_you_think  do_you_have  do_you_know 
-##          761          568          334</code></pre>
+<pre><code>## [1] &quot;think&quot; &quot;have&quot;  &quot;know&quot;</code></pre>
 </div>
 
 
