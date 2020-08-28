@@ -9,17 +9,12 @@ all_data <- readtext(paste0(getwd(), "/Samples/*.txt"), encoding = "UTF-8")
 
 # create a corpus 
 corp <- corpus(all_data)
-#print(corp)
 
 # remove non utf-8 characters
 texts(corp) <- iconv(texts(corp), from = "UTF-8", to = "ASCII", sub = "")
 texts(corp) <- gsub("[\u2019\u0092]","'",texts(corp))
-texts(corp) <- gsub('[\\,\"\\.\\*\\?!#:/();]', "", texts(corp))
-
 # remove punctuation
-library(stringr)
-#texts(corp) <- str_replace_all(texts(corp), pattern = "[^a-zA-Z0-9]", " ")
-#texts(corp) <- str_replace_all(texts(corp), pattern = '[[\\.\\*\\",\\?:#!] ]+', " ")
+texts(corp) <- gsub('[\\,\"\\.\\*\\?!#:/();]', "", texts(corp))
 
 # perform data cleaning using the quanteda package
 # first create tokens object removing all non alphabetical characters
@@ -31,10 +26,6 @@ tok <- tokens(corp, what = "fasterword", remove_punct = TRUE, remove_symbols = T
 
 # to lower case
 tok <- tokens_tolower(tok)
-
-# remove punctuation again
-#tok <- tokens_remove(tok, pattern = "[^a-zA-Z]")
-#tok <- tokens_remove(tok, pattern = '[[\\.\\*\\",\\?:#!]]')
 
 # remove profanity
 con <- file("https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol", "r")
@@ -68,23 +59,17 @@ textplot_wordcloud(dfm, random_order = FALSE, max_words = 150, rotation = 0.25,
                    color = RColorBrewer::brewer.pal(8, "Dark2"))
 
 # create n-grams
-biGram <- tokens_ngrams(tok, n = 2)
-# biGram <- tokens_ngrams(tok, n = 2, concatenator = " ")
-
+biGram <- tokens_ngrams(tok, n = 2, concatenator = " ")
 # 2-gram
 head(biGram[[1]],30)
 # 3-gram
-triGram <- tokens_ngrams(tok, n = 3)
+triGram <- tokens_ngrams(tok, n = 3, concatenator = " ")
 head(triGram[[1]],30)
 
 # get frequencies
-#topfeatures(dfm(biGram), 20)
-#topfeatures(dfm(triGram), 20)
-
-# plot in ggplot
 top20bigram <- topfeatures(dfm(biGram), 20)
 freq <- data.frame(feature = names(top20bigram), frequency = top20bigram)
-
+# plot in ggplot
 gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
         geom_bar(stat = "identity") + 
         coord_flip() +

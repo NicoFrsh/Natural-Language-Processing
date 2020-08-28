@@ -24,12 +24,15 @@ all_data <- readtext(paste0(getwd(), "/Samples/*.txt"), encoding = "UTF-8")
 
 Next, we create a quanteda corpus object. As there were some encoding problems I had to substitute all non-UTF-8 encoded characters to ASCII.
 
-```{r, echo=TRUE, cache=TRUE}
+```{r, cache=TRUE}
 # create a corpus 
 corp <- corpus(all_data)
 
 # remove non utf-8 characters
 texts(corp) <- iconv(texts(corp), from = "UTF-8", to = "ASCII", sub = "")
+texts(corp) <- gsub("[\u2019\u0092]","'",texts(corp))
+# remove punctuation
+texts(corp) <- gsub('[\\,\"\\.\\*\\?!#:/();]', "", texts(corp))
 ```
 
 Now, we can tokenize our corpus object. We want to have word tokens and remove all numbers, punctuation, symbols and URLs.
@@ -39,12 +42,9 @@ tok <- tokens(corp, what = "fasterword", remove_punct = TRUE, remove_symbols = T
               remove_numbers = TRUE, remove_url = TRUE, split_hyphens = TRUE)
 ```
 
-As another part of the data cleaning process we want to remove english stopwords like "the", "i", "a", "is", etc. as they should not be taken into account for our further data analysis. Also, we want all our words to be in lower case and lastly we want to remove profanity words. For the latter case I used [this](https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol) list from Github.
+As another part of the data cleaning process we want to remove profanity words. In this case I used [this](https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol) list from Github.
 
 ```{r}
-# remove stop words
-tok <- tokens_select(tok, stopwords('english'),selection='remove')
-
 # to lower case
 tok <- tokens_tolower(tok)
 
@@ -90,8 +90,8 @@ N-grams are word chains of N words that appear in our corpus. We want to know th
 
 ```{r}
 # create n-grams
-biGram <- tokens_ngrams(tok, n = 2)
-triGram <- tokens_ngrams(tok, n = 3)
+biGram <- tokens_ngrams(tok, n = 2, concatenator = " ")
+triGram <- tokens_ngrams(tok, n = 3, concatenator = " ")
 
 # get frequencies and plot
 top20bigram <- topfeatures(dfm(biGram), 20)
@@ -116,7 +116,6 @@ gg
 ```
 
 This already looks quite nice, there are mostly bi- and tri-grams that make actually sense.
-Nonetheless, the bi-gram 'said._"i' appears several times.
 
 Next, we want to answer the question how many unique words we need in a frequency sorted dictionary to cover 50% and 90% of all word instances in the language. To find that out, we construct a new dataframe containing the by frequency sorted words of our data, their cumulative sum and proportion of the total amount of words in all of our text data. The plot below shows the coverage (y-axis) along the number of sorted unique words (x-axis). The red line shows the point at which the coverage surpasses 50% - needing the first 1818 most frequent words - and the blue line where it surpasses 90%, achieved by including the first 18554 words.  
 
