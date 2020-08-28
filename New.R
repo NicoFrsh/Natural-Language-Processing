@@ -114,12 +114,14 @@ close(con)
 
 foreignWords <- tokens_select(tok, enDict, selection = "remove")
 foreignWords
+ntoken(foreignWords)
+sum(ntoken(foreignWords))
 
-# TODO: number of tokens before and after removing foreign words
 # remove foreign words
+sum(ntoken(tok))
 tok <- tokens_select(tok, enDict, selection = "keep")
-# still a lot of punctuation 
-tokens_select(tok, pattern = "")
+sum(ntoken(tok))
+
 
 # Can you think of a way to increase the coverage -- identifying words that may not be in the
 # corpora or using a smaller number of words in the dictionary to cover the same number of phrases?

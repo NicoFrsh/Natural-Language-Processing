@@ -117,7 +117,7 @@ gg
 
 This already looks quite nice, there are mostly bi- and tri-grams that make actually sense.
 
-Next, we want to answer the question how many unique words we need in a frequency sorted dictionary to cover 50% and 90% of all word instances in the language. To find that out, we construct a new dataframe containing the by frequency sorted words of our data, their cumulative sum and proportion of the total amount of words in all of our text data. The plot below shows the coverage (y-axis) along the number of sorted unique words (x-axis). The red line shows the point at which the coverage surpasses 50% - needing the first 1818 most frequent words - and the blue line where it surpasses 90%, achieved by including the first 18554 words.  
+Next, we want to answer the question how many unique words we need in a frequency sorted dictionary to cover 50% and 90% of all word instances in the language. To find that out, we construct a new dataframe containing the by frequency sorted words of our data, their cumulative sum and proportion of the total amount of words in all of our text data. The plot below shows the coverage (y-axis) along the number of sorted unique words (x-axis). The red line shows the point at which the coverage surpasses 50% - requiring only the first 143 most frequent words - and the blue line where it surpasses 90%, achieved by including the first 6730 words.  
 
 ```{r}
 topfeat <- topfeatures(dfm, length(dfm))
@@ -134,6 +134,31 @@ abline(v = ind50, col = "red")
 abline(v = ind90, col = "blue")
 ind50
 ind90
+```
+
+Now, we want to check for words from foreign languages. I used [this](https://raw.githubusercontent.com/dwyl/english-words/master/words.txt) dictionary of english words to find all foreign words in the data set.
+
+```{r}
+# Find words from foreign languages.
+# use english dictionary dataset
+url <- "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
+cnct <- file(url, "r")
+enDict <- readLines(cnct)
+close(cnct)
+
+foreignWords <- tokens_select(tok, enDict, selection = "remove")
+foreignWords
+ntoken(foreignWords)
+sum(ntoken(foreignWords))
+```
+
+So there are 360600 foreign words in total in our data. Lets remove those foreign words:
+
+```{r}
+# remove foreign words
+sum(ntoken(tok))
+tok <- tokens_select(tok, enDict, selection = "keep")
+sum(ntoken(tok))
 ```
 
 Another question we should ask ourselves is how to increase the coverage, i.e. identifying words that may not be in the corpora or using a smaller number of words in the dictionary to cover the same number of phrases? One solution would be to trim our data set by deleting words that only appear very few times. Those words may be very specific and thus not very helpful for our further modelling.
