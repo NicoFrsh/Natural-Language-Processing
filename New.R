@@ -134,9 +134,10 @@ ntoken(dfm)
 ##### Modelling
 
 # naive approach
-predictWord <- function(toks, prevWord){
-        word_bigram <- tokens_compound(toks, pattern = phrase(paste0(prevWord, " *")))
-        word_bigram_select <- tokens_select(word_bigram, pattern = phrase(paste0(prevWord, "_*")))
+predictWord <- function(toks, prevWords){
+        word_bigram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
+        prevWords <- stringr::str_replace(prevWords, " ", "_")
+        word_bigram_select <- tokens_select(word_bigram, pattern = phrase(paste0(prevWords, "_*")))
         
         topfeatures(dfm(word_bigram_select), 3)
 }
@@ -144,6 +145,7 @@ predictWord <- function(toks, prevWord){
 predictWord(tok, "just")
 predictWord(tok, "i")
 predictWord(tok, "why")
+predictWord(tok, "do you")
 
 # Lets try selective n-grams
 # for example negation bigram

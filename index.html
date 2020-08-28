@@ -526,9 +526,10 @@ ntoken(dfm)</code></pre>
 <h2>Modeling</h2>
 <p>Naive approach:</p>
 <pre class="r"><code># naive approach
-predictWord &lt;- function(toks, prevWord){
-        word_bigram &lt;- tokens_compound(toks, pattern = phrase(paste0(prevWord, &quot; *&quot;)))
-        word_bigram_select &lt;- tokens_select(word_bigram, pattern = phrase(paste0(prevWord, &quot;_*&quot;)))
+predictWord &lt;- function(toks, prevWords){
+        word_bigram &lt;- tokens_compound(toks, pattern = phrase(paste0(prevWords, &quot; *&quot;)))
+        prevWords &lt;- stringr::str_replace(prevWords, &quot; &quot;, &quot;_&quot;)
+        word_bigram_select &lt;- tokens_select(word_bigram, pattern = phrase(paste0(prevWords, &quot;_*&quot;)))
         
         topfeatures(dfm(word_bigram_select), 3)
 }
@@ -542,6 +543,9 @@ predictWord(tok, &quot;just&quot;)</code></pre>
 <pre class="r"><code>predictWord(tok, &quot;why&quot;)</code></pre>
 <pre><code>##   why_i why_are  why_do 
 ##     732     408     396</code></pre>
+<pre class="r"><code>predictWord(tok, &quot;do you&quot;)</code></pre>
+<pre><code>## do_you_think  do_you_have  do_you_know 
+##          761          568          334</code></pre>
 </div>
 
 
