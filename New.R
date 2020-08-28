@@ -131,12 +131,27 @@ ntoken(dfm)
 dfm <- dfm_trim(dfm, min_termfreq = 5, termfreq_type = "count")
 ntoken(dfm)
 
+##### Modelling
+
+# naive approach
+predictWord <- function(toks, prevWord){
+        word_bigram <- tokens_compound(toks, pattern = phrase(paste0(prevWord, " *")))
+        word_bigram_select <- tokens_select(word_bigram, pattern = phrase(paste0(prevWord, "_*")))
+        
+        topfeatures(dfm(word_bigram_select), 3)
+}
+
+predictWord(tok, "just")
+predictWord(tok, "i")
+predictWord(tok, "why")
+
 # Lets try selective n-grams
 # for example negation bigram
 just_bigram <- tokens_compound(tok, pattern = phrase("just *"))
 just_bigram_select <- tokens_select(just_bigram, pattern = phrase("just_*"))
 head(just_bigram_select[[1]],30)
-
+# get topfeatures
+topfeatures(dfm(just_bigram_select), 20)
 # generate skip-gram
 toks_skip <- tokens_ngrams(tok, n = 2, skip = 1:2)
 head(toks_skip[[1]], 30)

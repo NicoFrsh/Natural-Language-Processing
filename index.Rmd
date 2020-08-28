@@ -138,7 +138,7 @@ ind90
 
 Now, we want to check for words from foreign languages. I used [this](https://raw.githubusercontent.com/dwyl/english-words/master/words.txt) dictionary of english words to find all foreign words in the data set.
 
-```{r}
+```{r, cache=TRUE}
 # Find words from foreign languages.
 # use english dictionary dataset
 url <- "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
@@ -154,7 +154,7 @@ sum(ntoken(foreignWords))
 
 So there are 360600 foreign words in total in our data. Lets remove those foreign words:
 
-```{r}
+```{r, cache=TRUE}
 # remove foreign words
 sum(ntoken(tok))
 tok <- tokens_select(tok, enDict, selection = "keep")
@@ -172,3 +172,21 @@ ntoken(dfm)
 ```
 
 Doing so, we removed some reasonable amount of words from our data.
+
+## Modeling
+
+Naive approach:
+
+```{r}
+# naive approach
+predictWord <- function(toks, prevWord){
+        word_bigram <- tokens_compound(toks, pattern = phrase(paste0(prevWord, " *")))
+        word_bigram_select <- tokens_select(word_bigram, pattern = phrase(paste0(prevWord, "_*")))
+        
+        topfeatures(dfm(word_bigram_select), 3)
+}
+
+predictWord(tok, "just")
+predictWord(tok, "i")
+predictWord(tok, "why")
+```

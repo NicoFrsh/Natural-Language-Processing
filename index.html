@@ -522,6 +522,27 @@ ntoken(dfm)</code></pre>
 ##           3690284           3341948           2923067</code></pre>
 <p>Doing so, we removed some reasonable amount of words from our data.</p>
 </div>
+<div id="modeling" class="section level2">
+<h2>Modeling</h2>
+<p>Naive approach:</p>
+<pre class="r"><code># naive approach
+predictWord &lt;- function(toks, prevWord){
+        word_bigram &lt;- tokens_compound(toks, pattern = phrase(paste0(prevWord, &quot; *&quot;)))
+        word_bigram_select &lt;- tokens_select(word_bigram, pattern = phrase(paste0(prevWord, &quot;_*&quot;)))
+        
+        topfeatures(dfm(word_bigram_select), 3)
+}
+
+predictWord(tok, &quot;just&quot;)</code></pre>
+<pre><code>##       just_a     just_got just_because 
+##         1605          796          730</code></pre>
+<pre class="r"><code>predictWord(tok, &quot;i&quot;)</code></pre>
+<pre><code>##  i_was i_have   i_am 
+##   9462   9068   8593</code></pre>
+<pre class="r"><code>predictWord(tok, &quot;why&quot;)</code></pre>
+<pre><code>##   why_i why_are  why_do 
+##     732     408     396</code></pre>
+</div>
 
 
 
