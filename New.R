@@ -13,6 +13,13 @@ corp <- corpus(all_data)
 
 # remove non utf-8 characters
 texts(corp) <- iconv(texts(corp), from = "UTF-8", to = "ASCII", sub = "")
+texts(corp) <- gsub("[\u2019\u0092]","'",texts(corp))
+texts(corp) <- gsub('[\\,\"\\.\\*\\?!#:/();]', "", texts(corp))
+
+# remove punctuation
+library(stringr)
+#texts(corp) <- str_replace_all(texts(corp), pattern = "[^a-zA-Z0-9]", " ")
+#texts(corp) <- str_replace_all(texts(corp), pattern = '[[\\.\\*\\",\\?:#!] ]+', " ")
 
 # perform data cleaning using the quanteda package
 # first create tokens object removing all non alphabetical characters
@@ -20,10 +27,14 @@ tok <- tokens(corp, what = "fasterword", remove_punct = TRUE, remove_symbols = T
               remove_numbers = TRUE, remove_url = TRUE, split_hyphens = TRUE)
 
 # remove stop words
-tok <- tokens_select(tok, stopwords('english'),selection='remove')
+#tok <- tokens_select(tok, stopwords('english'),selection='remove')
 
 # to lower case
 tok <- tokens_tolower(tok)
+
+# remove punctuation again
+#tok <- tokens_remove(tok, pattern = "[^a-zA-Z]")
+#tok <- tokens_remove(tok, pattern = '[[\\.\\*\\",\\?:#!]]')
 
 # remove profanity
 con <- file("https://gist.githubusercontent.com/ryanlewis/a37739d710ccdb4b406d/raw/3b70dd644cec678ddc43da88d30034add22897ef/google_twunter_lol", "r")
@@ -67,8 +78,8 @@ triGram <- tokens_ngrams(tok, n = 3)
 head(triGram[[1]],30)
 
 # get frequencies
-topfeatures(dfm(biGram), 20)
-topfeatures(dfm(triGram), 20)
+#topfeatures(dfm(biGram), 20)
+#topfeatures(dfm(triGram), 20)
 
 # plot in ggplot
 top20bigram <- topfeatures(dfm(biGram), 20)
@@ -108,6 +119,22 @@ abline(v = ind50, col = "red")
 abline(v = ind90, col = "blue")
 ind50
 ind90
+
+# Find words from foreign languages.
+# use english dictionary dataset
+url <- "https://raw.githubusercontent.com/dwyl/english-words/master/words.txt"
+con <- file(url, "r")
+enDict <- readLines(con)
+close(con)
+
+foreignWords <- tokens_select(tok, enDict, selection = "remove")
+foreignWords
+
+# TODO: number of tokens before and after removing foreign words
+# remove foreign words
+tok <- tokens_select(tok, enDict, selection = "keep")
+# still a lot of punctuation 
+tokens_select(tok, pattern = "")
 
 # Can you think of a way to increase the coverage -- identifying words that may not be in the
 # corpora or using a smaller number of words in the dictionary to cover the same number of phrases?
@@ -178,3 +205,6 @@ some_text <- iconv(some_text, from = "UTF-8", to = "ASCII", sub = "")
 text_tok <- tokens(some_text, remove_numbers = TRUE, remove_symbols = TRUE, remove_punct = TRUE)
 text_tok <- tokens_select(text_tok, profList, selection = "remove")
 text_tok
+
+texttt <- 'concerned. computer.* \"give hallo! #papijuancho out:'
+gsub('[\"\\.\\*!\\?#:]', "", texttt)
