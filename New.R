@@ -135,11 +135,11 @@ ntoken(dfm)
 
 # naive approach
 predictWord <- function(toks, prevWords){
-        word_bigram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
+        word_ngram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
         prevWords <- stringr::str_replace(prevWords, " ", "_")
-        word_bigram_select <- tokens_select(word_bigram, pattern = phrase(paste0(prevWords, "_*")))
+        word_ngram_select <- tokens_select(word_ngram, pattern = phrase(paste0(prevWords, "_*")))
         
-        top3 <- topfeatures(dfm(word_bigram_select), 3)
+        top3 <- topfeatures(dfm(word_ngram_select), 3)
         
         # filter only the following word
         sub(".*_", "", names(top3))
@@ -147,8 +147,12 @@ predictWord <- function(toks, prevWords){
 
 predictWord(tok, "just")
 predictWord(tok, "i")
-predictWord(tok, "why")
-predictWord(tok, "do you")
+predictWord(tok, "tell me")
+predictWord(tok, "thanks for")
+
+#### POSSIBLE IMPROVEMENTS:
+#       - as we only need 6730 words to cover 90% of all words (>30.000) we could use only those
+#         those 6730 as our toks corpus
 
 # Lets try selective n-grams
 # for example negation bigram

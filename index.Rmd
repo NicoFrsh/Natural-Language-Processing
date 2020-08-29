@@ -9,10 +9,15 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 ```
 
-## Milestone Report
+## About the Data
 
-About the data ....
-In order to save computation time I sampled 10% of the data of all texts and saved those samples in separate text files. These smaller samples are stored in a folder named 'Samples' and can be loaded completely starting the analysis.
+The goal of this project is to implement a Natural Language Processing prediction algorithm to predict the next word given the previous 1, 2 or 3 words. Those prrediction models are widely used, i.e. on Mobile Devices and SwiftKey is one of the pioneers in this area. For this project we are using the HC Corpora which contains text data from blogs, news and twitter documents in serveral languages. We will focus on the english data sets. The raw data has a total of **over 4 million lines** in all three documents and **over 100 million words**. That's **over half a Gigabyte of data**.
+
+
+In order to save computation time I sampled 10% of the data of all texts and saved those samples in separate text files. These smaller samples are stored in a folder named 'Samples' and can be loaded completely starting the analysis. By sampling I was able to reduce the data to **427000 lines**, a bit over **10 million words** and a total of about **55 Megabytes**.
+
+## Getting and Cleaning Data
+
 I decided to use the quanteda package for all of my data preprocessing and exploratory analysis. To gather the data from the 3 text files I used the readtext function from the equally named package. 
 
 ```{r}
@@ -56,7 +61,7 @@ close(con)
 tok <- tokens_select(tok, profList, selection = "remove")
 ```
 
-Although there are still some issues about the texts, such as unwanted dots or commas that were not properly removed by the remove_punct function, we concede to the next step of our analysis, the exploratory analysis.
+I consciously decided **not** to remove stop words such as "the", "a", "i", "and", etc. as I want them to be included in the analysis and later prediction algorithm.
 
 ## Exploratory Analysis
 
@@ -115,7 +120,7 @@ gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
 gg
 ```
 
-This already looks quite nice, there are mostly bi- and tri-grams that make actually sense.
+This already looks quite nice, all of the most frequent bi- and tri-grams make actually sense.
 
 Next, we want to answer the question how many unique words we need in a frequency sorted dictionary to cover 50% and 90% of all word instances in the language. To find that out, we construct a new dataframe containing the by frequency sorted words of our data, their cumulative sum and proportion of the total amount of words in all of our text data. The plot below shows the coverage (y-axis) along the number of sorted unique words (x-axis). The red line shows the point at which the coverage surpasses 50% - requiring only the first 143 most frequent words - and the blue line where it surpasses 90%, achieved by including the first 6730 words.  
 
@@ -152,39 +157,38 @@ ntoken(foreignWords)
 sum(ntoken(foreignWords))
 ```
 
-So there are 360600 foreign words in total in our data. Lets remove those foreign words:
+So there are 360600 foreign words in total in our data. Lets remove them:
 
 ```{r, cache=TRUE}
 # remove foreign words
-sum(ntoken(tok))
 tok <- tokens_select(tok, enDict, selection = "keep")
-sum(ntoken(tok))
 ```
 
 Another question we should ask ourselves is how to increase the coverage, i.e. identifying words that may not be in the corpora or using a smaller number of words in the dictionary to cover the same number of phrases? One solution would be to trim our data set by deleting words that only appear very few times. Those words may be very specific and thus not very helpful for our further modelling.
 
 ```{r}
 # check number of words in each document before trimming
+dfm <- dfm(tok)
 ntoken(dfm)
 dfm <- dfm_trim(dfm, min_termfreq = 5, termfreq_type = "count")
 # check number of words afterwards
 ntoken(dfm)
 ```
 
-Doing so, we removed some reasonable amount of words from our data.
+Doing so, we removed some reasonable amount of words from our data. After all, we have reduced our data from over 10 million to 9.6 million words and we have learned that we only need the 6730 most frequent words to cover 90% of the total word usage, which might be useful for our prediction algorithm later.  
 
 ## Modeling
 
-Naive approach:
+A first naive prediction approach could be the following function. Its input arguments are the quanteda tokens object and a string containing the previous words we want to use to predict the following word. The function takes this string and finds all existing N-grams in the tokens object containing the string plus one more word. Then it finds the three most frequent N-grams and returns their last word, which are our three suggestions.
 
 ```{r}
 # naive approach
 predictWord <- function(toks, prevWords){
-        word_bigram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
+        word_ngram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
         prevWords <- stringr::str_replace(prevWords, " ", "_")
-        word_bigram_select <- tokens_select(word_bigram, pattern = phrase(paste0(prevWords, "_*")))
+        word_ngram_select <- tokens_select(word_ngram, pattern = phrase(paste0(prevWords, "_*")))
         
-        top3 <- topfeatures(dfm(word_bigram_select), 3)
+        top3 <- topfeatures(dfm(word_ngram_select), 3)
         
         # filter only the following word
         sub(".*_", "", names(top3))
@@ -195,3 +199,10 @@ predictWord(tok, "i")
 predictWord(tok, "why")
 predictWord(tok, "do you")
 ```
+
+The algorithm seems to work pretty well, all of the suggested words make sense.
+
+Problems to consider:
+
+- tokens object is still too large so that the computation time exceeds our expectations, so we have to reduce our training data even more, for example using only the 6730 words that have a coverage of 90%
+- some N-grams are unseen in our training data, we need to find a way to predict the next word in those cases
