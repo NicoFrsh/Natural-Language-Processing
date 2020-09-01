@@ -87,6 +87,15 @@ gg <- ggplot(freq, aes(x = reorder(feature, frequency), y = frequency)) +
 
 gg
 
+# Can you think of a way to increase the coverage -- identifying words that may not be in the
+# corpora or using a smaller number of words in the dictionary to cover the same number of phrases?
+# answer: trim words that have very low frequency as they are very specialized / specific
+# check number of tokens / words
+dfm <- dfm(tok)
+ntoken(dfm)
+dfm <- dfm_trim(dfm, min_termfreq = 5, termfreq_type = "count")
+ntoken(dfm)
+
 # QUESTION:
 # How many unique words do you need in a frequency sorted dictionary
 # to cover 50% of all word instances in the language? 90%? 
@@ -122,15 +131,6 @@ sum(ntoken(tok))
 tok <- tokens_select(tok, enDict, selection = "keep")
 sum(ntoken(tok))
 
-
-# Can you think of a way to increase the coverage -- identifying words that may not be in the
-# corpora or using a smaller number of words in the dictionary to cover the same number of phrases?
-# answer: trim words that have very low frequency as they are very specialized / specific
-# check number of tokens / words
-ntoken(dfm)
-dfm <- dfm_trim(dfm, min_termfreq = 5, termfreq_type = "count")
-ntoken(dfm)
-
 ##### Modelling
 
 # naive approach
@@ -141,18 +141,95 @@ predictWord <- function(toks, prevWords){
         
         top3 <- topfeatures(dfm(word_ngram_select), 3)
         
+        # calculate probabilities
+        
+        prob3 <- top3 / sum(topfeatures(dfm(word_ngram_select)))
+        prob3 <- round(prob3 * 100, digits = 2)
+        
+        print("Probabilies (in %):")
+        print(prob3)
+        
         # filter only the following word
         sub(".*_", "", names(top3))
 }
 
-predictWord(tok, "just")
+predictWord(tok, "can you")
 predictWord(tok, "i")
 predictWord(tok, "tell me")
 predictWord(tok, "thanks for")
 
-#### POSSIBLE IMPROVEMENTS:
+#### PROBLEMS:
 #       - as we only need 6730 words to cover 90% of all words (>30.000) we could use only those
 #         those 6730 as our toks corpus
+#       - how to handle unseen n-grams
+#       - smoothing: some next words have probability 0 (count 0) even though they
+#                    make perfect sense
+#       - 
+
+#### First improvement:
+# reduce tokens
+# remember that ind90 is the index for the most frequent words with a coverage of 90%
+
+top90perc <- topfeat[1:ind90]
+
+toks_red <- tokens_select(tok, names(top90perc), selection = "keep")
+
+object.size(toks_red)
+object.size(tok)
+object.size(tok) - object.size(toks_red)
+# reduced the object by almost 4 MB, not too much
+
+# try old tokens object first and measure time
+start_time <- Sys.time()
+predictWord(tok, "i")
+end_time <- Sys.time()
+end_time - start_time
+
+# now the reduced tokens object
+start_time <- Sys.time()
+predictWord(toks_red, "i")
+end_time <- Sys.time()
+end_time - start_time
+
+# minimal improvement in computation time
+
+# improved algorithm (based on Katz' back-off model)
+predictWordImproved <- function(toks, prevWords, smoothing = TRUE){
+        
+        # backoff
+        word_ngram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
+        prevWords <- stringr::str_replace(prevWords, " ", "_")
+        word_ngram_select <- tokens_select(word_ngram, pattern = phrase(paste0(prevWords, "_*")))
+        
+        foundWords <- length(word_ngram_select[[1]])
+        
+        countDown <- ntoken(prevWords)
+        
+        while (foundWords == 0 & countDown > 0){
+                # eliminate one of the previous words
+                prevWords <- sub(".*?_", "", prevWords)
+                word_ngram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
+                prevWords <- stringr::str_replace(prevWords, " ", "_")
+                word_ngram_select <- tokens_select(word_ngram, pattern = phrase(paste0(prevWords, "_*")))
+                foundWords <- length(word_ngram_select[[1]])
+                countDown <- countDown - 1
+        }
+        
+        top3 <- topfeatures(dfm(word_ngram_select), 3)
+        
+        # calculate probabilities
+        
+        prob3 <- top3 / sum(topfeatures(dfm(word_ngram_select)))
+        prob3 <- round(prob3 * 100, digits = 2)
+        
+        print("Probabilies (in %):")
+        print(prob3)
+        
+        # filter only the following word
+        sub(".*_", "", names(top3))
+        
+}
+
 
 # Lets try selective n-grams
 # for example negation bigram
