@@ -121,15 +121,11 @@ con <- file(url, "r")
 enDict <- readLines(con)
 close(con)
 
-foreignWords <- tokens_select(tok, enDict, selection = "remove")
-foreignWords
-ntoken(foreignWords)
-sum(ntoken(foreignWords))
-
 # remove foreign words
 sum(ntoken(tok))
 tok <- tokens_select(tok, enDict, selection = "keep")
 sum(ntoken(tok))
+dfm <- dfm(tok)
 
 ##### Modelling
 
@@ -191,10 +187,15 @@ predictWord(toks_red, "i")
 end_time <- Sys.time()
 end_time - start_time
 
-# minimal improvement in computation time
+# some significant improvement in computation time
 
 # improved algorithm (based on Katz' back-off model)
 predictWordImproved <- function(toks, prevWords, smoothing = TRUE){
+        
+        # only use at most trigrams to predict
+        if (ntoken(prevWords) > 5){
+                prevWords <- stringr::word(prevWords, start = -5, end = -1)
+        }
         
         # backoff
         word_ngram <- tokens_compound(toks, pattern = phrase(paste0(prevWords, " *")))
@@ -230,12 +231,21 @@ predictWordImproved <- function(toks, prevWords, smoothing = TRUE){
         
 }
 
+#### TESTING
+predictWordImproved(toks_red, "The guy in front of me just bought a pound of bacon, a bouquet, and a case of")
+predictWordImproved(toks_red, "It would mean the")
+predictWordImproved(toks_red, "can you follow me and make me the")
+predictWordImproved(toks_red, "Offense still struggling but the")
+predictWordImproved(toks_red, "Go on a romantic date at the")
+predictWordImproved(toks_red, "I'll dust them off and be on my")
+predictWordImproved(toks_red, "Love that film and haven't seen it in quite some")
 
 # Lets try selective n-grams
 # for example negation bigram
-just_bigram <- tokens_compound(tok, pattern = phrase("just *"))
-just_bigram_select <- tokens_select(just_bigram, pattern = phrase("just_*"))
+just_bigram <- tokens_compound(tok, pattern = phrase("* +* +beer"))
+just_bigram_select <- tokens_select(just_bigram, pattern = phrase("*_*_beer"))
 head(just_bigram_select[[1]],30)
+topfeatures(dfm(just_bigram_select), 10)
 # get topfeatures
 topfeatures(dfm(just_bigram_select), 20)
 # generate skip-gram
