@@ -171,6 +171,7 @@ predictNextWord <- function(prevWords){
 
 
 predictNextWord4("The guy in front of me just bought a pound of bacon, a bouquet, and a case of")
+predictNextWord5("The guy in front of me just bought a pound of bacon, a bouquet, and a case of")
 predictNextWord("It would mean the")
 predictNextWord("can you follow me and make me the")
 predictNextWord("Offense still struggling but the")
